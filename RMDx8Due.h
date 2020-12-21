@@ -17,7 +17,7 @@ public:
     uint16_t MOTOR_ADDRESS, encoder_pos;
     int32_t present_position;
 
-    RMDx8Due(CAN_COMMON &CAN, const uint16_t motor_addr);    // クラスと同一の名前にするとコンストラクタ扱い
+    RMDx8Due(const uint16_t motor_addr);    // クラスと同一の名前にするとコンストラクタ扱い
 
     // Commands
     void canSetup();
@@ -37,7 +37,8 @@ public:
     void serialWriteTerminator();
 
 private:
-    CAN_COMMON _CAN;
+    CAN_FRAME rxMsg; //[SIZE_RX_BUFFER];
+    CAN_FRAME txMsg; //[SIZE_TX_BUFFER];
     uint32_t pos_u32t;
     bool isRead;
 

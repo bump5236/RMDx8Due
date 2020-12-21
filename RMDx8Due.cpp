@@ -3,20 +3,21 @@
 #include "RMDx8Due.h"
 
 // constructor
-RMDx8Due::RMDx8Due(CAN_COMMON &CAN, const uint16_t motor_addr) 
-    :_CAN(CAN){
+RMDx8Due::RMDx8Due(const uint16_t motor_addr) {
         MOTOR_ADDRESS = motor_addr;
-        CAN_FRAME rxMsg, txMsg;  //TODO
+        txMsg.id = MOTOR_ADDRESS; //モータに合わせる
+        txMsg.extended = false;
+        txMsg.priority = 0; //0-15 lower is higher priority
+        txMsg.length = 8;
     }
-
 
 void RMDx8Due::canSetup() {
-    while (0 != _CAN.begin(CAN_BPS_1000K)) {
-        Serial.println("CAN BUS Shield init fail");
-        Serial.println("Init CAN BUS Shield again");
+    while (0 != Can0.begin(CAN_BPS_1000K)) {
+        Serial.println("MCP2551 init fail");
+        Serial.println("Init MCP2551 again");
         delay(100);
     }
-    Serial.println("CAN BUS Shield init ok!");
+    Serial.println("MCP2551 init ok!");
 }
 
 
@@ -293,8 +294,8 @@ void RMDx8Due::serialWriteTerminator() {
 void RMDx8Due::readBuf(unsigned char *buf) {
     isRead = 0;
 
-    if (_CAN.available() > 0) {
-        _CAN.read(rxMsg);
+    if (Can0.available() > 0) {
+        Can0.read(rxMsg);
 
         if (rxMsg.data.byte[0] == buf[0]) {
             reply_buf[0] = rxMsg.data.byte[0];
@@ -323,7 +324,7 @@ void RMDx8Due::writeCmd(unsigned char *buf) {
 	txMsg.data.byte[7] = buf[7];
 
     // CAN通信で送る
-    unsigned char sendState = _CAN.sendFrame(txMsg);
+    unsigned char sendState = Can0.sendFrame(txMsg);
     if (sendState != false) {
         Serial.println("Error Sending Message...");
         Serial.println(sendState);
